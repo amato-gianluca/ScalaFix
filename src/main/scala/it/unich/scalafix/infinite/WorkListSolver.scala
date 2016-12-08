@@ -41,10 +41,9 @@ object WorkListSolver {
   def apply[U, V](eqs: EquationSystem[U, V])
                  (wanted: Iterable[U], start: Assignment[U, V] = eqs.initial,
                   listener: FixpointSolverListener[U, V] = EmptyListener): PartialAssignment[U, V] = {
-    val infl = new mutable.HashMap[U, mutable.Set[U]] with mutable.MultiMap[U, U] {
-      override def makeSet = new mutable.LinkedHashSet[U]
-    }
-    var workList = mutable.Queue.empty[U]
+
+    val infl = mutable.HashMap.empty[U, mutable.Set[U]]
+    val workList = mutable.Queue.empty[U]
     workList ++= wanted
 
     val current = mutable.HashMap.empty[U, V].withDefault(start)
@@ -57,8 +56,9 @@ object WorkListSolver {
         if (!current.isDefinedAt(y)) {
           current(y) = start(y)
           workList += y
+          infl(y) = mutable.LinkedHashSet.empty
         }
-        infl.addBinding(y, x)
+        infl(y) += x
       }
       if (newval != current(x)) {
         current(x) = newval

@@ -84,13 +84,15 @@ object GraphEquationSystem {
     val body = new Body[U, V] {
       def apply(rho: Assignment[U, V]) = {
         (x: U) =>
-          val contributions = for (e <- ingoing(x)) yield edgeAction(rho)(e)
-          // if contribution is empty the unknown x has no right hand side... it seems
-          // reasonable to return the old value.
-          if (contributions.isEmpty)
+          val it = ingoing(x).iterator
+          if (it.isEmpty)
             rho(x)
-          else
-            contributions reduce dom.upperBound
+          else {
+            var res = edgeAction(rho)(it.next())
+            while (! it.isEmpty)
+              res = dom.upperBound(res, edgeAction(rho)(it.next()))
+            res
+          }
       }
     }
   }
