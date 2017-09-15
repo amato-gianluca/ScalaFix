@@ -20,8 +20,6 @@ package it.unich
 
 import it.unich.scalafix.utils.IterableFunction
 
-import scala.language.implicitConversions
-
 /**
   * The fixpoint package contains everything which is related to defining and solving systems
   * of equations. This package object defines some type aliases which are used in the API.

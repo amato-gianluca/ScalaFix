@@ -20,10 +20,10 @@ package it.unich.scalafix.jmh
 
 import it.unich.scalafix.finite.FiniteEquationSystem.SimpleFiniteEquationSystem
 import it.unich.scalafix.finite.GraphEquationSystem.{ComputedDependencies, SimpleGraphEquationSystem}
-import it.unich.scalafix.{Assignment, Body, BoxAssignment, EquationSystem}
 import it.unich.scalafix.finite.{FiniteEquationSystem, GraphEquationSystem}
-import it.unich.scalafix.lattice.{Domain, Magma}
+import it.unich.scalafix.lattice.Domain
 import it.unich.scalafix.utils.Relation
+import it.unich.scalafix.{Assignment, Body, EquationSystem}
 
 /**
   * This class represents an equation system made of equations `x(i+1)=x(i)` for i from 0 to n-1. This is a very

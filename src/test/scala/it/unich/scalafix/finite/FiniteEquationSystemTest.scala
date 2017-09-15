@@ -63,7 +63,6 @@ class FiniteEquationSystemTest extends FunSpec with PropertyChecks {
     * solvers which are guaranteed to terminate with the given equation system.
     */
   def testCorrectness[U, V](eqs: FiniteEquationSystem[U, V], solver: SimpleSolver[U, V])(implicit values: Arbitrary[V]) = {
-    import solver._
     val startRhosList = Gen.listOfN(eqs.unknowns.size, values.arbitrary)
     val startRhos = startRhosList map { (l) => Map(eqs.unknowns.toSeq zip l: _*) }
     forAll(startRhos) { start =>
@@ -78,8 +77,6 @@ class FiniteEquationSystemTest extends FunSpec with PropertyChecks {
     * assignment `startRho`.
     */
   def testExpectedResult(solver: SimpleSolver[Int, Double]) {
-    import solver._
-
     it("gives the expected result starting from startRho with last") {
       val finalRho = solver(simpleEqs.withBoxes(lastBox), startRho)
       assert(finalRho(0) === 0.0)

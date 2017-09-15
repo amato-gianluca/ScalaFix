@@ -20,7 +20,7 @@ package it.unich.scalafix.finite
 
 import it.unich.scalafix._
 import it.unich.scalafix.lattice.Magma
-import it.unich.scalafix.utils.{Relation, IterableFunction}
+import it.unich.scalafix.utils.Relation
 
 /**
   * This is the abstract class for an equation system with a finite set of unknowns AND static dependencies between
