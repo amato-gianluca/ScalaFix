@@ -18,7 +18,7 @@
 
 package it.unich.scalafix.jmh
 
-import it.unich.scalafix.{Body, _}
+import it.unich.scalafix._
 import it.unich.scalafix.finite.{FiniteEquationSystem, GraphEquationSystem}
 import it.unich.scalafix.utils.Relation
 
@@ -41,7 +41,7 @@ class CliqueGraphEQS[V](n: Int, v: Double) extends GraphEquationSystem[Int,Doubl
   val ingoing =  { (i: Int) => (0 until i) map { (_,i) } }
   val initial = { (x: Int) => v }
   val infl = Relation( { (i: Int) => (i+1 until n).toSet } )
-  val body = Body( { rho: Assignment[Int,Double] => { i: Int => (0 until i) map { rho(_) } reduce dom.upperBound }  } )
+  val body = { rho: Assignment[Int,Double] => { i: Int => (0 until i) map { rho(_) } reduce dom.upperBound } }
   val bodyWithDependencies = { rho: Assignment[Int,Double] => { (i: Int) => (body(rho)(i), (0 until i).toSet) } }
 }
 

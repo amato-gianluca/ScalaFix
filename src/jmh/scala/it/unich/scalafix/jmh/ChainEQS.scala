@@ -23,7 +23,7 @@ import it.unich.scalafix.finite.GraphEquationSystem.{ComputedDependencies, Simpl
 import it.unich.scalafix.finite.{FiniteEquationSystem, GraphEquationSystem}
 import it.unich.scalafix.lattice.Domain
 import it.unich.scalafix.utils.Relation
-import it.unich.scalafix.{Assignment, Body, EquationSystem}
+import it.unich.scalafix.{Assignment, EquationSystem}
 
 /**
   * This class represents an equation system made of equations `x(i+1)=x(i)` for i from 0 to n-1. This is a very
@@ -45,7 +45,7 @@ class ChainGraphEQS[V](dom: Domain[V])(n: Int, v: V) extends GraphEquationSystem
   val ingoing =  { (i: Int) => if (i==0) Seq.empty else Seq(i-1) }
   val initial = { (i: Int) => v }
   val infl = Relation( { (i: Int) => Set(i+1) } )
-  val body = Body( { rho: Assignment[Int,V] => { i: Int => if (i > 0) rho(i - 1) else rho(0) }  } )
+  val body = { rho: Assignment[Int,V] => { i: Int => if (i > 0) rho(i - 1) else rho(0) }  }
   val bodyWithDependencies = { rho: Assignment[Int,V] => { i: Int => if (i> 0) (rho(i-1), Seq(i-1)) else (rho(0), Seq(0)) } }
 }
 
@@ -77,7 +77,7 @@ class ChainSimpleGraphEQS[V](dom: Domain[V])(n: Int, v: V) extends SimpleGraphEq
   * @param v the initial value for all unknowns
   */
 class ChainSimpleFiniteEQS[V](dom: Domain[V])(n: Int, v: V) extends SimpleFiniteEquationSystem[Int,V](
-  body = Body( { rho: Assignment[Int,V] => { i: Int => if (i > 0) rho(i - 1) else rho(0) }  } ),
+  body = { rho: Assignment[Int,V] => { i: Int => if (i > 0) rho(i - 1) else rho(0) }  },
   initial = { (x: Int) => v },
   inputUnknowns = Set(0),
   unknowns = 0 to n,
@@ -91,7 +91,7 @@ class ChainSimpleFiniteEQS[V](dom: Domain[V])(n: Int, v: V) extends SimpleFinite
   * @param v the initial value for all unknowns
   */
 class ChainInfiniteEQS[V](v: V) extends EquationSystem[Int, V] with EquationSystem.WithBoxes[Int,V]  with EquationSystem.WithBaseAssignment[Int,V] {
-  val body = Body({ rho: Assignment[Int, V] => { i: Int => if (i > 0) rho(i - 1) else rho(0) } })
+  val body = { rho: Assignment[Int, V] => { i: Int => if (i > 0) rho(i - 1) else rho(0) } }
   val initial = { (x: Int) => v }
   val inputUnknowns = Set(0)
   val bodyWithDependencies = { rho: Assignment[Int, V] => { i: Int => (rho(i - 1), if (i>0) Seq(i - 1) else Seq.empty) } }
@@ -105,7 +105,7 @@ class ChainInfiniteEQS[V](v: V) extends EquationSystem[Int, V] with EquationSyst
   */
 class ChainInfinite2EQS[V](v: V) extends EquationSystem[Int, V] with EquationSystem.WithBoxes[Int,V]  with EquationSystem.WithBaseAssignment[Int,V]
   with EquationSystem.BodyWithDependenciesFromBody[Int,V] {
-  val body = Body({ rho: Assignment[Int, V] => { i: Int => if (i > 0) rho(i - 1) else rho(0) } })
+  val body = { rho: Assignment[Int, V] => { i: Int => if (i > 0) rho(i - 1) else rho(0) } }
   val initial = { (x: Int) => v }
   val inputUnknowns = Set(0)
 }
