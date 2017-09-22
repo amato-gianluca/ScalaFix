@@ -52,7 +52,7 @@ object PriorityWorkListSolver {
     workList ++= eqs.unknowns
     while (!workList.isEmpty) {
       val x = workList.dequeue()
-      val newval = eqs.body(current)(x)
+      val newval = eqs(current,x)
       listener.evaluated(current, x, newval)
       val oldval = current(x)
       if (restart(newval, oldval))

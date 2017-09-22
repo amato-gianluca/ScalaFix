@@ -20,94 +20,68 @@ package it.unich.scalafix.finite
 
 import it.unich.scalafix._
 import it.unich.scalafix.lattice.Magma
-import it.unich.scalafix.utils.Relation
 
 /**
   * This is the abstract class for an equation system with a finite set of unknowns AND static dependencies between
   * them. When computing `apply(rho)(x)`, the result may only depend on values of `rho(y)` for an `y` such that
   * `y infl x`.
   */
-abstract class FiniteEquationSystem[U, V] extends EquationSystem[U, V] {
+abstract class FiniteEquationSystem[U, V: Magma] extends EquationSystem[U, V] {
   /**
     * The collection of all unknowns.
     */
   val unknowns: Iterable[U]
 
   /**
-    * The unknowns which may be considered the input to this equation system.
-    */
-  val inputUnknowns: Set[U]
-
-  /**
     * The static relation between an unknown x and the unknowns y it influences. If `infl(x)` does not contain `y`, it
     * means that `eqs(rho)(y) == eqs(rho')(y)`, when `rho' = rho[x / eqs(rho)(x)]`.
     */
-  val infl: Relation[U]
+  def infl(u: U): Iterable[U]
 
   /**
     * Add boxes to the equation system.
+    *
+    * @param boxes a box assignment.
     */
   def withBoxes(boxes: BoxAssignment[U, V]): FiniteEquationSystem[U, V]
 
   /**
-    * Combine a base assignment with the equation system
+    * Combine a base assignment with the equation system. The type `V` should be endowed with a magma.
     *
-    * @param init the assignment to add to the equation system
+    * @param init the assignment to add to the equation system.
     */
-  def withBaseAssignment(init: PartialFunction[U, V])(implicit magma: Magma[V]): FiniteEquationSystem[U, V]
+  def withBaseAssignment(init: PartialFunction[U, V]): FiniteEquationSystem[U, V]
+
+  /**
+    * Add tracing to the equation system.
+    *
+    * @param t the tracer to call.
+    */
+  def withTracer(t: EquationSystemTracer[U,V]): FiniteEquationSystem[U,V]
 }
 
-object FiniteEquationSystem {
+case class SimpleFiniteEquationSystem[U,V: Magma]
+( body: Assignment[U,V] => Assignment[U,V],
+  bodyInfl: U => Seq[U],
+  initial: Assignment[U,V],
+  inputUnknowns: U => Boolean,
+  unknowns: Iterable[U],
+  boxAssignment: BoxAssignment[U,V] = BoxAssignment.empty,
+  baseAssignment: PartialFunction[U,V] = PartialFunction.empty,
+  tracer: EquationSystemTracer[U,V] = EquationSystemTracer.empty,
+) extends FiniteEquationSystem[U,V] with SimpleBodyImpl[U,V] {
 
-  /**
-    * A trait which provides the withBaseAssignment method to finite equation systems.
-    */
-  trait WithBaseAssignment[U, V] {
-    this: FiniteEquationSystem[U, V] =>
+  def infl(u: U) = if (boxAssignment.boxesAreIdempotent || ! boxAssignment.isDefinedAt(u))
+    bodyInfl(u)
+  else
+    u +: bodyInfl(u)
 
-    def withBaseAssignment(init: PartialFunction[U, V])(implicit magma: Magma[V]): FiniteEquationSystem[U, V] =
-      new SimpleFiniteEquationSystem(
-        body = body.withBaseAssignment(init),
-        initial = initial,
-        inputUnknowns = inputUnknowns,
-        unknowns = unknowns,
-        infl = infl
-      )
-  }
+  def withBaseAssignment(initial: PartialFunction[U, V]): FiniteEquationSystem[U,V] =
+    copy(initial = initial)
 
-  /**
-    * A trait which provides the withBoxes method to finite equation systems.
-    */
-  trait WithBoxes[U, V] {
-    this: FiniteEquationSystem[U, V] =>
+  def withBoxes(boxAssignment: BoxAssignment[U, V]): FiniteEquationSystem[U,V] =
+    copy(boxAssignment = boxAssignment)
 
-    def withBoxes(boxes: BoxAssignment[U, V]): FiniteEquationSystem[U, V] =
-      new SimpleFiniteEquationSystem(
-        body = body.withBoxAssignment(boxes),
-        initial = initial,
-        inputUnknowns = inputUnknowns,
-        unknowns = unknowns,
-        infl = if (boxes.boxesAreIdempotent) infl else infl.withDiagonal
-      )
-  }
-
-  /**
-    * A class defining a finite equation system given its constituents parts (with the excpetion of the body with
-    * dependencies which is automatically computed).
-    */
-  class SimpleFiniteEquationSystem[U, V](
-                                                val body: Body[U, V],
-                                                val initial: Assignment[U, V],
-                                                val inputUnknowns: Set[U],
-                                                val unknowns: Iterable[U],
-                                                val infl: Relation[U]
-                                              )
-    extends FiniteEquationSystem[U, V] with EquationSystem.BodyWithDependenciesFromBody[U, V] with WithBaseAssignment[U, V] with WithBoxes[U, V]
-
-  /**
-    * A finite equation system given its constituents parts (with the exception of the body with dependencies which
-    * is automatically computed).
-    */
-  def apply[U, V](body: Body[U, V], initial: Assignment[U, V], inputUnknowns: Set[U], unknowns: Iterable[U], infl: Relation[U]): FiniteEquationSystem[U, V] =
-    new SimpleFiniteEquationSystem(body, initial, inputUnknowns, unknowns, infl)
+  def withTracer(tracer: EquationSystemTracer[U, V]): FiniteEquationSystem[U,V] =
+    copy(tracer = tracer)
 }

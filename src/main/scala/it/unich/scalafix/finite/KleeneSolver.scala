@@ -49,7 +49,7 @@ object KleeneSolver {
     while (dirty) {
       dirty = false
       for (x <- eqs.unknowns) {
-        val newval = eqs.body(current)(x)
+        val newval = eqs(current,x)
         listener.evaluated(current, x, newval)
         if (newval != current(x)) dirty = true
         next(x) = newval

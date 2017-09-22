@@ -61,7 +61,7 @@ object HierarchicalOrderingSolver {
           dirty = false
           i += 1
         case Val(x) =>
-          val newval = eqs.body(current)(x)
+          val newval = eqs(current,x)
           listener.evaluated(current, x, newval)
           if (newval != current(x)) {
             current(x) = newval
